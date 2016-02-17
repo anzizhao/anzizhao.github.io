@@ -1,0 +1,67 @@
+/**
+* todo 
+*/
+
+.rating {
+    unicode-bidi: bidi-override;
+    direction: rtl;
+    margin-left: 150px;
+    /*float:right;*/
+}
+.rating > span {
+    display: inline-block;
+    position: relative;
+    width: 1.1em;
+    font-size: 20px;
+}
+/*.rating > span.changeStar:hover:before,*/
+/*.rating > span.changeStar:hover ~ span.changeStar:before {*/
+    /*color: gold;*/
+    /*content: "\2605";*/
+    /*position: absolute;*/
+/*}*/
+
+.signStar:before{
+    color: gold;
+    content: "\2605";
+    position: absolute;
+}
+.todo-item{
+    overflow: auto;
+}
+.todo-item-title-second {
+
+}
+
+.item-input{
+    margin-bottom: 10px;
+    /*margin-left: 10px;*/
+}
+
+.item-score{
+    margin-top:  5px;
+    margin-bottom: 5px;
+}
+.item-score-title{
+    font-size: 15px;
+    margin-left: 10px;
+    margin-bottom: 5px;
+}
+
+.item-show-right{
+    float: right;
+    /*margin-top: -20px;*/
+}
+
+.item-show-right-star{
+    font-size: 12px;
+    font-weight: 100;
+    /*font-style: italic;*/
+}
+.todo-sub-but {
+    margin-left: 40px;
+    cursor: pointer;
+}
+.todo-item-sub{
+    margin: 20px 40px 5px 0;
+}
