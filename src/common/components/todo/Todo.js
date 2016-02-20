@@ -8,7 +8,6 @@ import ActionGrade from 'material-ui/lib/svg-icons/action/grade';
 
 import Colors from 'material-ui/lib/styles/colors';
 
-<<<<<<< HEAD
 
 
 
@@ -16,12 +15,6 @@ import TakeRate from './takeRate';
 import SelectTags from './selectTags';
 import TodoItemList from './todoItemList';
 
-=======
-import Tags from './tags';
-
-import 'react-select2-wrapper/css/select2.min.css';
-import Select2 from 'react-select2-wrapper';
->>>>>>> origin/master
 
 export default class Todo extends Component {
     // 本地的变量  因为要需要取消掉的 其实可以考虑undo
@@ -142,7 +135,6 @@ export default class Todo extends Component {
         }
         this.state.tags = tags 
     }
-<<<<<<< HEAD
 
     getStyle (){
         const style =  this.constructor.style
@@ -224,214 +216,6 @@ export default class Todo extends Component {
                         <FlatButton label="完成" onClick={(e) => this.handleSaveTodo() }  style={ style.flatButton }  />
                         <FlatButton label="取消" onClick={(e) => this.handleUnsaveTodo() }  style={ style.flatButton }  />
                     </div>
-=======
-    
-  render() {
-      const { id, conclusion, allTags } = this.props
-      const style = {
-          listItem: {
-              //textDecoration: this.props.completed ? 'line-through' : 'none',
-              //cursor: this.props.completed ? 'default' : 'pointer',
-              display:  this.props.collapse ? 'block' : 'none'
-          },
-          editTodo: {
-              display: ! this.props.collapse ? 'block' : 'none',
-          },
-          opButGroup: {
-              float: 'right',
-          },
-          listTextSpan: {
-              float: 'left',
-              textDecoration: this.props.completed ? 'line-through' : 'none',
-          },
-          badge: {
-              fontSize: 15, 
-              marginTop: '10px',
-              width: '18px',
-              height: '18px'
-          },
-          secondtext: {
-                marginTop: '25px',
-                marginLeft: '30px',
-                marginRight: '30px',
-          },
-          badgeRoot: {
-            padding: "20px 18px 12px 0", 
-          },
-          selectTag:{
-            width: "100%" 
-          } 
-
-      }
-
-      const listText = ( 
-                        <span > 
-                            <span  style={style.listTextSpan}>
-                            { `${ String(this.props.index + 1) }.  ${this.props.text}        ` } 
-                            </span>
-                            <Tags tags={this.state.tags } /> 
-                            <span className="item-show-right">
-                                <Badge
-                                    badgeContent={this.state.importanceStar }
-                                    className='item-show-right-star'
-                                    style={ style.badgeRoot }
-                                    badgeStyle={{...style.badge, 'backgroundColor':'rgba(243, 255, 66, 0.56)'}} 
-                                >
-                                    重要
-                                </Badge>
-                                <Badge
-                                    badgeContent={this.state.signStar }
-                                    className='item-show-right-star'
-                                    style={ style.badgeRoot }
-                                    badgeStyle={{...style.badge, 'backgroundColor':'rgba(244, 67, 54, 0.56)'}} 
-                                >
-                                    紧急
-                                </Badge>
-                                <Badge
-                                    badgeContent={ this.state.difficultyStar }
-                                    className='item-show-right-star'
-                                    style={ style.badgeRoot }
-                                    badgeStyle={{...style.badge, 'backgroundColor':'rgba(3, 169, 244, 0.56)'}} 
-                                >
-                                    困难
-                                </Badge>
-                            </span>
-                        </span>
-                       )
-
-       const iconButtonElement = (
-           <IconButton
-               touch={true}
-           >
-               <MoreVertIcon color={Colors.grey400} />
-           </IconButton>
-       ) 
-      const rightIconMenu = (
-        <IconMenu iconButtonElement={iconButtonElement}>
-          <MenuItem 
-              onClick={ () =>  this.handleEditItem(id)  }
-              primaryText="编辑"
-          />
-          <MenuItem
-              onClick={(e) => this.handleDelItem(e, id) } 
-              primaryText="删除"
-          />
-          <MenuItem
-              onClick={(e) => this.handleComplete(e, id) }
-              primaryText="完成"
-          />
-          <MenuItem
-              onClick={(e) => this.handleUNComplete(e,   id) } 
-              primaryText="未完成"
-          />
-        </IconMenu>
-      )
-      let secondaryText = '' 
-      let secondaryTextLines   = 1
-      let subItems = []
-      let index = 1
-      //结论
-      if ( conclusion ) {
-          subItems.push(<TodoSubItem
-                        todoId = { this.props.id }
-                        key="conclusion" 
-                        index={index} 
-                        parentIndex={this.props.index+1}
-                        { ...conclusion } 
-                        actions={this.props.actions} /> )
-
-          index += 1
-          secondaryText = (
-                <span  style={style.secondtext} > 
-                   结论:  { conclusion.text }
-                </span> 
-          ) 
-          // 可以根据字数  设置多少行
-          secondaryTextLines = 2
-
-      }
-
-      //过程描述
-      if ( this.props.process.length != 0 ) {
-          for( let item of this.props.process ) {
-              subItems.push(<TodoSubItem
-                            todoId = { this.props.id }
-                            key={item.id} 
-                            index={index} 
-                            parentIndex={this.props.index+1 }
-                            {...item} 
-                            actions={this.props.actions} /> )
-
-                            index += 1
-          }
-      }
-      subItems.push(<TodoSubBut 
-                        todoId = { this.props.id }
-                        key="addBut"
-                        actions={this.props.actions } /> )
-
-    console.log("before return")
-    return (
-        <div className="todo-item">
-            <ListItem 
-                primaryText={ listText } 
-                secondaryText = { secondaryText }
-                secondaryTextLines =  { secondaryTextLines }
-                style={style.listItem}
-                rightIconButton={ rightIconMenu }
-                primaryTogglesNestedList={true}
-                nestedItems={subItems}
-                key={ this.props.key }
-            />
-            <div style={style.editTodo } >
-                 <label>{ this.props.index + 1 } </label>
-                 <TextField
-                    className='item-input'
-                     fullWidth
-                     value={this.state.itemText}
-                     onChange={(e)=>this.handleChangeItem(e)}
-                     onEnterKeyDown ={(e) => this.handleSaveTodo()}
-                 />
-                 <div className="item-score">
-                    <span  className='item-score-title'>重要程度 
-                        <StarRate star={this.state.importanceStar  }
-                         clickStar={(e, count)=>{ this.handleImportanceStar(e, id, count)}  } 
-                         initHasSignStar={ this.state.initImportanceStarFlag}
-                         />  
-                     </span>
-                     <br/>
-                    <span  className='item-score-title'>紧急程度 
-                        <StarRate star={this.state.signStar }
-                         clickStar={(e, count)=>{ this.handleSignStar(e, id, count)}  } 
-                         initHasSignStar={ this.state.initHasSignStar }
-                         />  
-                     </span>
-                     <br/>
-                    <span  className='item-score-title'>难易程度 
-                        <StarRate star={this.state.difficultyStar }
-                         clickStar={(e, count)=>{ this.handleDifficultyStar(e, id, count)}  } 
-                         initHasSignStar={ this.state.initDifficultyFlag }
-                         />  
-                     </span>
-                 </div>
-
-                 <div className="select-tag">
-                     <Select2
-                         style={style.selectTag}
-                         multiple
-                         data={allTags}
-                         onChange={ this.handleTagChange.bind(this) }
-                         options={{
-                                 placeholder: '添加或选择标签',
-                                 tags: true,
-                             }
-                         }
-                     />
-                 </div>
-                <div style={style.opButGroup }>
-                    <FlatButton label="完成" onClick={(e) => this.handleSaveTodo() }  style={ style.flatButton }  />
-                    <FlatButton label="取消" onClick={(e) => this.handleUnsaveTodo() }  style={ style.flatButton }  />
->>>>>>> origin/master
                 </div>
 
 

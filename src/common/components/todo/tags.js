@@ -7,13 +7,8 @@ export default class Tags extends Component {
         return (
             <span  className='tags'>
             {
-<<<<<<< HEAD
                 tags.map((item, index) =>(
                     <span className='tagBadge' key={index} > 
-=======
-                tags.map(item =>(
-                    <span className='tagBadge'> 
->>>>>>> origin/master
                         <span className="badge3"></span>
                         { item.text }
                     </span>
