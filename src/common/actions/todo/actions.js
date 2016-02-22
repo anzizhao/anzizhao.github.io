@@ -1,4 +1,4 @@
-var {storeTodoState, storeTodoTags} = require('../../util')
+var {storeTodoState, storeTodoTags }  = require('../../util')
 
 export const ADD_TODO = 'ADD_TODO'
 export const COMPLETE_TODO = 'COMPLETE_TODO'
@@ -8,6 +8,7 @@ export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
 export const SET_SORT = 'SET_SORT'
 export const EXPORT_TODO = 'EXPORT_TODO' 
 export const IMPORT_TODO = 'IMPORT_TODO' 
+export const CLEAR_ALL_TODO = 'CLEAR_ALL_TODO' 
 export const INIT_TODO = 'INIT_TODO' 
 export const SAVE_TODO = 'SAVE_TODO' 
 export const EDIT_TODO = 'EDIT_TODO' 
@@ -29,7 +30,6 @@ export const TODEL_TODO_SUB_CONCLUSION = 'TODEL_TODO_SUB_CONCLUSION'
 //tags
 export const INIT_TAGS= 'INIT_TAGS' 
 export const ADD_TAGS = 'ADD_TAGS' 
-
 
 export const VisibilityFilters = {
   SHOW_ALL: 'SHOW_ALL',
@@ -75,8 +75,12 @@ export function exportTodo () {
     return { type: EXPORT_TODO }
 }
 
-export function importTodo (todos) {
-    return { type: IMPORT_TODO,  todos }
+export function importTodo (fileJson) {
+    return { type: IMPORT_TODO, fileJson }
+}
+
+export function clearAllTodo () {
+    return { type: CLEAR_ALL_TODO }
 }
 
 let nextTodoId = 0
@@ -91,7 +95,6 @@ export function addTodo (text, tags) {
 
 export function initTodo () {
     const db = storeTodoState()
-    nextTodoId += db.length;
     return {
       type: INIT_TODO,
       todos:  db,
@@ -122,11 +125,11 @@ export function addTodoSubProcess (todoId ) {
 export function addTodoSubConclusion (todoId ) {
     return { type: ADD_TODO_SUB_CONCLUSION, id:todoId }
 }
-export function saveTodoSub(todoId, processId, type, text ) {
+export function saveTodoSub(todoId, processId, type, item ) {
     if ( type === todoSubItemType.process ) {
-        return { type: SAVE_TODO_SUB_PROCESS, id:todoId, processId, text } 
+        return { type: SAVE_TODO_SUB_PROCESS, id:todoId, processId, item } 
     } else if ( type === todoSubItemType.conclusion ){
-        return { type: SAVE_TODO_SUB_CONCLUSION, id:todoId,  text } 
+        return { type: SAVE_TODO_SUB_CONCLUSION, id:todoId,  text: item.text }  
     }
 }
 

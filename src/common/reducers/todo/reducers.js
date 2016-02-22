@@ -56,6 +56,17 @@ function tags (state = [], action) {
         case cmds.INIT_TAGS:
             return action.tags 
 
+            
+        case todoActions.IMPORT_TODO:
+            // 新加的  跟原来的比较  uuid是否相同  日期更新
+            // add array 
+            for(let item of action.tags )  {
+                addTagsItem(state,{ text: item.text })
+            }
+            storeTodoState(state);
+            return state 
+
+            return state;
         case cmds.ADD_TAGS:
             if ( action.tags ) {
                 // add array 
@@ -144,9 +155,10 @@ function todo(state, action) {
                 return state
             }
             let selItem = process[index]
-            selItem.text = action.text
             selItem.lastTime = Date.now()
             selItem.status = todoActions.todoSubItemStatus.show  
+            selItem.text = action.item.text
+            selItem.tags = action.item.tags 
 
             return state
 
@@ -204,14 +216,18 @@ function todos(state = [], action) {
     let db = []
     let db2 = []
     switch (action.type) {
-        case INIT_TODO:
+        case todoActions.INIT_TODO:
                 return action.todos
 
-        case EXPORT_TODO:
-            const jsonFile = JSON.stringify(state);
-            const filename = `todo_${ new Date().toLocaleDateString() }.json`;
-            exportFile(jsonFile, filename);
-            return state;
+        case todoActions.CLEAR_ALL_TODO:
+            storeTodoState([]);
+            return [];
+
+        //case todoActions.EXPORT_TODO:
+            //const jsonFile = JSON.stringify(state);
+            //const filename = `todo_${ new Date().toLocaleDateString() }.json`;
+            //exportFile(jsonFile, filename);
+            //return state;
 
         case todoActions.IMPORT_TODO:
             // 新加的  跟原来的比较  uuid是否相同  日期更新
@@ -243,7 +259,8 @@ function todos(state = [], action) {
             storeTodoState(db2);
             return db2
 
-        case ADD_TODO:
+        case todoActions.ADD_TODO:
+            action.id = state.length 
             db = [
                 todo(undefined, action),
                 ...state
@@ -251,12 +268,12 @@ function todos(state = [], action) {
             storeTodoState(db);
             return db;
 
-        case DEL_TODO:
+        case todoActions.DEL_TODO:
             db = state.filter((item)=>{ return item.id == action.id ? false: true } ) 
             storeTodoState(db);
             return db;
 
-        case SAVE_TODO:
+        case todoActions.SAVE_TODO:
             let index = state.findIndex((ele, index, arr) => {
                                 if ( ele.id === action.id )  {
                                     return true
@@ -284,7 +301,7 @@ function todos(state = [], action) {
             storeTodoState(db);
             return db;
 
-        case COMPLETE_TODO: 
+        case todoActions.COMPLETE_TODO: 
         case todoActions.UNCOMPLETE_TODO: 
         case todoActions.ADD_TODO_SUB_PROCESS:
         case todoActions.ADD_TODO_SUB_CONCLUSION:
@@ -295,9 +312,11 @@ function todos(state = [], action) {
         case todoActions.TODEL_TODO_SUB_PROCESS:
         case todoActions.TODEL_TODO_SUB_CONCLUSION:
 
-            db = state.map(t =>
-                             todo(t, action)
-                            )
+            db = state.map(t => {
+                return  t.id === action.id ? todo(t, action) : t 
+
+            })
+
             storeTodoState(db);
             return db;
 
@@ -335,11 +354,55 @@ function todos(state = [], action) {
 }
 
 
-const todoApp = combineReducers({
-    tags,
-    visibilityFilter,
-    sort,
-    todos: undoable(todos, { filter: distinctState() })
-})
+//const todoApp = combineReducers({
+    //tags,
+    //visibilityFilter,
+    //sort,
+    //todos: undoable(todos, { filter: distinctState() })
+//})
+
+function beforeReducers(action){
+    switch (action.type) {
+        case todoActions.IMPORT_TODO:
+            action.todos = action.fileJson.todos || []
+            action.tags = action.fileJson.tags || []
+    }
+    return action 
+}
+
+function afterReducers ( state={} ,  action ) {
+    switch (action.type) {
+        case todoActions.EXPORT_TODO:
+            const jsonObj = {
+                todos: state.todos.present,
+                tags: state.tags 
+            }
+            const jsonFile = JSON.stringify( jsonObj )
+            const filename = `todo_${ new Date().toLocaleDateString() }.json`;
+            exportFile(jsonFile, filename);
+    }
+    return state 
+}
+
+//需要在todoApp 这里完成完成导入导出  因为处理完的tags 和 todos 
+function todoApp(state = {}, action) {
+    
+    const actionb = beforeReducers(action) 
+    const undoTodo = undoable(todos, { filter: distinctState() })
+
+    // 小级reducers 处理
+    const combineState =  {
+          tags: tags(state.tags, actionb ),
+          visibilityFilter: visibilityFilter(state.visibilityFilter, actionb),
+          sort: sort(state.sort, actionb ),
+          todos: undoTodo(state.todos, actionb ),
+    }
+    // 本级reducers处理 
+    const retState = afterReducers(combineState, actionb )
+
+    return retState 
+}
+
+
 
 export default todoApp
