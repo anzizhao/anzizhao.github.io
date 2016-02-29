@@ -13,29 +13,62 @@ export default class SelectTags extends Component {
     render() {
         const style = this.getStyle() 
         const { onChange, allTags ,select } = this.props
-        const options = {
-            placeholder: '添加或选择标签',
-            tags: true,
+        let multiple  
+        let options    = {}
+        if (! this.props.disableTag ) {
+            options = {
+                placeholder: '添加或选择标签',
+                tags: true,
+            }
         }
         // select2 id should be the number 
-        const _tags = allTags.map((item, index) => {
-            return {
-                id: index,
-                text: item.text
-            } 
-        })
-        let _select  = []
-        select.forEach(item => {
-            let result = _tags.find(tag =>  item.text === tag.text ) 
-            if ( result ) {
-                _select.push  ( result.id )
+        //const _tags = [{id: 0, text:''},  //default show all item 
+            //... allTags.map((item, index) => {
+                    //return {
+                        //id: index+1,
+                        //text: item.text
+                    //} 
+                //})
+            //]
+
+        let _select, _tags   
+        if ( this.props.singleSelect ) {
+            _select  = 0 
+            multiple = false  
+            // 选择文件的需求
+            _tags = [{id: 0, text:'全部文件'},  //default show all item 
+                ... allTags.map((item, index) => {
+                    return {
+                        id: index+1,
+                        text: item.text
+                    } 
+                })
+            ]
+        } else {
+            _tags = allTags.map((item, index) => {
+                    return {
+                        id: index+1,
+                        text: item.text
+                    } 
+                })
+
+            _select  = []
+            multiple = true 
+            if ( select ) {
+                select.forEach(item => {
+                    let result = _tags.find(tag =>  item.text === tag.text ) 
+                    if ( result ) {
+                        _select.push  ( result.id )
+                    }
+                })
             }
-        })
+        }
+
         return (
                 <div className="select-tag">
                     <Select2
                         style={style.selectTag}
-                        multiple
+                        multiple =  { multiple } 
                         defaultValue={ _select }
                         data={_tags}
                         onChange={ onChange }
@@ -48,14 +81,16 @@ export default class SelectTags extends Component {
 
 SelectTags.propTypes = {
     onChange: PropTypes.func.isRequired,
+    disableTag: PropTypes.bool,
     allTags: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.string.isRequired,
+        id: PropTypes.string,
         text: PropTypes.string.isRequired,
     })).isRequired,
+    singleSelect: PropTypes.bool,
     select: PropTypes.arrayOf(PropTypes.shape({
         id: PropTypes.isRequired,
         text: PropTypes.string.isRequired,
-    })).isRequired
+    }))
 }
 
 SelectTags.style = {

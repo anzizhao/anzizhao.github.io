@@ -1,21 +1,37 @@
-var {storeTodoState, storeTodoTags }  = require('../../util')
-
+var {storeTodoState, storeTodoTags , storeTodoFromfiles}  = require('../../util')
+//init 
+export const INIT_ALL = 'INIT_ALL' 
+export const INIT_TODO = 'INIT_TODO' 
+export const INIT_TAGS= 'INIT_TAGS' 
+export const INIT_FROMFILES = 'INIT_FROMFILES' 
+//todo 
 export const ADD_TODO = 'ADD_TODO'
 export const COMPLETE_TODO = 'COMPLETE_TODO'
 export const UNCOMPLETE_TODO = 'UNCOMPLETE_TODO'
 export const DEL_TODO = 'DEL_TODO'
-export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
-export const SET_SORT = 'SET_SORT'
+
 export const EXPORT_TODO = 'EXPORT_TODO' 
 export const IMPORT_TODO = 'IMPORT_TODO' 
 export const CLEAR_ALL_TODO = 'CLEAR_ALL_TODO' 
-export const INIT_TODO = 'INIT_TODO' 
 export const SAVE_TODO = 'SAVE_TODO' 
 export const EDIT_TODO = 'EDIT_TODO' 
 export const UNEDIT_TODO = 'UNEDIT_TODO' 
+
+export const SET_VISIBILITY_FILTER = 'SET_VISIBILITY_FILTER'
+export const SET_SORT = 'SET_SORT'
+export const SET_SELECT_FILE= 'SET_SELECT_FILE'
+
+
+export const EXPORT_SELECT  = 'EXPORT_SELECT'
+export const DEL_SELECT  = 'DEL_SELECT'
+
 export const SIGN_STAR= 'SIGN_STAR' 
 export const ADD_TODO_TAG = 'ADD_TODO_TAG'
 
+export const SET_MODE = 'SET_MODE'   //set todo mode 
+export const TOGGLE_MODE = 'TOGGLE_MODE'   //set todo mode 
+export const SET_TODO_SELECT = 'SET_TODO_SELECT'   //select todo 
+export const SET_TODO_SELECT_ALL= 'SET_TODO_SELECT_ALL'   //set all todo  select 
 
 //sub todo 
 export const ADD_TODO_SUB_PROCESS  = 'ADD_TODO_SUB_PROCESS' 
@@ -28,7 +44,6 @@ export const TODEL_TODO_SUB_PROCESS = 'TODEL_TODO_SUB_PROCESS'
 export const TODEL_TODO_SUB_CONCLUSION = 'TODEL_TODO_SUB_CONCLUSION' 
 
 //tags
-export const INIT_TAGS= 'INIT_TAGS' 
 export const ADD_TAGS = 'ADD_TAGS' 
 
 export const VisibilityFilters = {
@@ -56,6 +71,11 @@ export const todoSubItemType = {
   conclusion: 1,
 }
 
+export const todoMode = {
+  default: 0, //默认模式
+  select: 1,  // 选择模式
+}
+
 export function completeTodo(id) {
   return { type: COMPLETE_TODO, id }
 }
@@ -71,12 +91,25 @@ export function setSort (cmd) {
   return { type: SET_SORT, cmd }
 }
 
+export function setSelectMode () {
+  return { type: SET_MODE,  mode: todoMode.select }
+}
+export function setDefaultMode () {
+  return { type: SET_MODE,  mode: todoMode.default }
+}
+
+export function toggleSelectMode () {
+  return { type: TOGGLE_MODE,  mode: todoMode.select }
+}
+
+
+
 export function exportTodo () {
     return { type: EXPORT_TODO }
 }
 
-export function importTodo (fileJson) {
-    return { type: IMPORT_TODO, fileJson }
+export function importTodo (fileJson, fromfile) {
+    return { type: IMPORT_TODO, fileJson, fromfile }
 }
 
 export function clearAllTodo () {
@@ -98,6 +131,28 @@ export function initTodo () {
     return {
       type: INIT_TODO,
       todos:  db,
+    }
+}
+
+export function initTags () {
+    const db = storeTodoTags()
+    return {
+      type: INIT_TAGS,
+      tags:  db,
+    }
+}
+
+export function initFromfiles() {
+    const db = storeTodoFromfiles()
+    return {
+      type: INIT_FROMFILES,
+      fromfiles:  db,
+    }
+}
+
+export function initAll () {
+    return {
+      type: INIT_ALL,
     }
 }
 
@@ -159,14 +214,27 @@ export function addTagsBatch (tags) {
     return { type: ADD_TAGS, tags } 
 }
 
-export function initTags () {
-    const db = storeTodoTags()
-    return {
-      type: INIT_TAGS,
-      tags:  db,
-    }
-}
 
 export function addTodoTags (id, tags) {
     return { type: ADD_TAGS, id, tags} 
+}
+
+export function selectTodo (id, select  ) {
+    return { type:  SET_TODO_SELECT, id, select } 
+}
+
+export function selectAllTodo ( select  ) {
+    return { type:  SET_TODO_SELECT_ALL,  select } 
+}
+
+export function exportSelect () {
+    return { type:  EXPORT_SELECT } 
+}
+export function delSelect () {
+    return { type:  DEL_SELECT } 
+}
+
+
+export function selectFile(filename){
+    return { type:  SET_SELECT_FILE, filename } 
 }

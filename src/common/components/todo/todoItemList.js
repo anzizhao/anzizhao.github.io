@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import ReactDOM from 'react-dom';
 
 import ListItem from 'material-ui/lib/lists/list-item';
+import Checkbox from 'material-ui/lib/checkbox';
 
 import TodoSubBut from './todoSubBut';
 import TodoSubItem from './todoSub';
@@ -9,6 +10,8 @@ import Tags from './tags';
 import TodoMenu from './TodoMenu';
 import Mertic from './metric';
 
+
+import * as todoActions  from '../../actions/todo/actions'
 
 export default class TodoItemList extends Component {
 
@@ -25,6 +28,11 @@ export default class TodoItemList extends Component {
         }
         return Object.assign({}, style, dStyle) 
     } 
+
+    _selectMode(){
+        return this.props.mode ===   todoActions.todoMode.select
+    }
+
 
     renderConclusion(subItems){
         const { id, conclusion , index, actions} = this.props
@@ -62,6 +70,7 @@ export default class TodoItemList extends Component {
     }
 
     renderSub(style){
+
         let secondaryText = '' 
         let secondaryTextLines   = 1
         let subItems = []
@@ -114,6 +123,9 @@ export default class TodoItemList extends Component {
                 )
     }
     renderRightIconMenu(){
+        //if ( this._selectMode() ) {
+            //return 
+        //}
         return (
             <a className="btn" type="button"> 
             <TodoMenu
@@ -124,6 +136,29 @@ export default class TodoItemList extends Component {
         ) 
     }
 
+    clickCheckbox(e, checked ){
+        //e.preventDefault()
+        const { actions, id } = this.props
+        const value =  checked
+        //console.log('clikCheckbox ' + value)
+        //console.dir(e)
+        actions.selectTodo(id, value)
+    }
+
+    renderCheckbox(){
+        const { actions, id, select } = this.props
+        //if ( this._selectMode() ) {
+            return (
+                <Checkbox 
+                    checked={ select }
+                    onCheck={ (e, checked)=> { this.clickCheckbox(e, checked) }} 
+                    />
+            )  
+        
+        //} 
+
+        //return  
+    }
 
     render() {
         const { id , actions, collapse } = this.props
@@ -134,19 +169,34 @@ export default class TodoItemList extends Component {
 
         const listText =  this.renderText(style) 
 
+        let rightIconMenu ,  leftCheckbox  
+        let toggleNestedList = true
+        let sub = {}
+        if ( this._selectMode() ) {
+            leftCheckbox = this.renderCheckbox()
+            toggleNestedList = false  
+        } else  {
+            // listItem 组建必需的左右icon button 必需为button  所有使用a 包裹住
+            rightIconMenu = this.renderRightIconMenu() 
+            sub  = this.renderSub(style)
+        }
         // listItem 组建必需的左右icon button 必需为button  所有使用a 包裹住
-        const rightIconMenu = this.renderRightIconMenu() 
-        const { secondaryText, secondaryTextLines, subItems } = this.renderSub(style)
+        //const rightIconMenu = this.renderRightIconMenu() 
+        //const { secondaryText, secondaryTextLines, subItems } = this.renderSub(style)
+
+        //const leftCheckbox = this.renderCheckbox()
 
         return (
             <ListItem 
-            primaryText={ listText } 
-            secondaryText = { secondaryText }
-            secondaryTextLines =  { secondaryTextLines }
-            style={style.listItem}
-            rightIconButton ={ rightIconMenu }
-            primaryTogglesNestedList={true}
-            nestedItems={subItems}
+                leftCheckbox={ leftCheckbox }
+                primaryText={ listText } 
+                style={style.listItem }
+                rightIconButton ={ rightIconMenu }
+                primaryTogglesNestedList={true}
+
+                secondaryText = { sub.secondaryText }
+                secondaryTextLines =  { sub.secondaryTextLines }
+                nestedItems={ sub.subItems }
             />
         )
     }
@@ -168,9 +218,12 @@ TodoItemList.propTypes = {
     index: PropTypes.number.isRequired,
     conclusion: PropTypes.object,
     collapse: PropTypes.bool.isRequired,
+    select: PropTypes.bool.isRequired,
     text: PropTypes.string.isRequired,
     importance: PropTypes.number.isRequired,
     urgency: PropTypes.number.isRequired,
+
+    mode: PropTypes.number.isRequired,
     difficulty: PropTypes.number.isRequired,
 
 } 
