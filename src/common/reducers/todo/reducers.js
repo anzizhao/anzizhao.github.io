@@ -128,6 +128,10 @@ function fromfiles (state = [], action) {
 
         case cmds.INIT_FROMFILES:
             return action.fromfiles
+
+        case cmds.CLEAR_ALL_TODO:
+            storeTodoFromfiles([]);
+            return [];
         default:
             return state
     }
@@ -149,7 +153,7 @@ function todo(state, action) {
                 timestamp: Date.now(),
                 process: [],
                 select: false,   //是否被选择
-                fromfile: '',  //从那个文件导入
+                fromfile: action.fromfile ,  //从那个文件导入
                 conclusion: null,
                 uuid: uuid.v1(),
                 tags: ( action.tags && action.tags instanceof Array )? action.tags : []
@@ -482,6 +486,7 @@ function todos(state = [], action) {
 function beforeReducers(state, action){
     action.currentMode = mode(state.mode, action) 
 
+    let tmp , t 
     switch (action.type) {
         case todoActions.IMPORT_TODO:
             action.todos = action.fileJson.todos || []
@@ -489,9 +494,23 @@ function beforeReducers(state, action){
             break
 
         case todoActions.DEL_SELECT:
-            let t  = state
+            t  = state
             action.visibilityFilter = t.visibilityFilter
             action.sort = t.sort 
+            break
+        case todoActions.ADD_TODO:
+            t  = state
+            action.fromfile = '' 
+
+            tmp = t.selectFile.find(file => {
+                return file.text === '[全部文件]'  ||  file.text === '[浏览器的]' 
+            }) 
+            let files = t.selectFile
+            if( files.length && files[0].text  !== '[全部文件]' 
+                    && files[0].text  !== '[全部文件]' 
+              ) {
+                action.fromfile = t.selectFile[0].text
+            }
             break
 
     }
