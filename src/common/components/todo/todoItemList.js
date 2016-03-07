@@ -13,16 +13,20 @@ import Mertic from './metric';
 
 import * as todoActions  from '../../actions/todo/actions'
 
+import  Immutable from 'immutable'
+
 export default class TodoItemList extends Component {
 
     getStyle (){
         const style =  this.constructor.style
+        const collapse  = this.props.todo.get("collapse")
+        const completed = this.props.todo.get("completed")
         const dStyle = {
             listItemDiv: {
-                display:  this.props.collapse ? 'block' : 'none'
+                display:  collapse ? 'block' : 'none'
             },
             listTextSpan: {
-                textDecoration: this.props.completed ? 'line-through' : 'none',
+                textDecoration:  completed ? 'line-through' : 'none',
             },
 
         }
@@ -30,12 +34,13 @@ export default class TodoItemList extends Component {
     } 
 
     _selectMode(){
-        return this.props.mode ===   todoActions.todoMode.select
+        return  this.props.todo.get("mode") ===   todoActions.todoMode.select
     }
 
 
-    renderConclusion(subItems){
-        const { id, conclusion , index, actions} = this.props
+    renderConclusion(subItems, todo){
+        const { id, conclusion  } = todo  
+        const { index, actions} = this.props
         //结论
         if ( conclusion ) {
             subItems.push(<TodoSubItem
@@ -51,13 +56,14 @@ export default class TodoItemList extends Component {
     }
 
 
-    renderProcess(subItems, i){
+    renderProcess(subItems, i, todo){
+        const {process, id} = todo  
         let index = i
         //过程描述
-        if ( this.props.process.length != 0 ) {
-            for( let item of this.props.process ) {
+        if ( process.length != 0 ) {
+            for( let item of process ) {
                 subItems.push(<TodoSubItem
-                              todoId = { this.props.id }
+                              todoId = { id }
                               key={item.id} 
                               index={index} 
                               parentIndex={this.props.index+1 }
@@ -69,32 +75,32 @@ export default class TodoItemList extends Component {
         }
     }
 
-    renderSub(style){
-
+    renderSub(style, todo){
+        const {conclusion, id} = todo  
         let secondaryText = '' 
         let secondaryTextLines   = 1
         let subItems = []
         let index = 1
 
         //结论
-        if ( this.renderConclusion( subItems )) {
+        if ( this.renderConclusion( subItems ,todo )) {
             index = 2 
             // 可以根据字数  设置多少行
             secondaryTextLines = 2
             secondaryText = (
                 <span  style={style.secondtext} > 
-                结论:  { this.props.conclusion.text }
+                结论:  { conclusion.text }
                 </span> 
             ) 
         }
 
-        this.renderProcess(subItems, index)
+        this.renderProcess(subItems, index, todo)
 
         // 操作按钮
         subItems.push(<TodoSubBut 
-                      todoId = { this.props.id }
-                      key="addBut"
-                      actions={this.props.actions } /> )
+                          todoId = { id }
+                          key="addBut"
+                          actions={this.props.actions } /> )
 
                       return {
                           subItems,    
@@ -103,8 +109,10 @@ export default class TodoItemList extends Component {
                       }              
     }
 
-    renderText(style){
-        const {index, text, tags, process, importance, urgency, difficulty, fromfile } = this.props
+    renderText(style, todo ){
+        const {text, tags, process, importance, urgency, difficulty, fromfile } = todo  
+        const {index} = this.props
+
         let info  
         if( this._selectMode() ) {
             info = fromfile 
@@ -129,10 +137,11 @@ export default class TodoItemList extends Component {
                 )
     }
     renderRightIconMenu(){
+        const id = this.props.todo.get("id")
         return (
             <a className="btn" type="button"> 
                 <TodoMenu
-                    todoId={this.props.id}
+                    todoId={id}
                     actions={ this.props.actions }
                 />
             </a> 
@@ -141,15 +150,16 @@ export default class TodoItemList extends Component {
 
     clickCheckbox(e, checked ){
         //e.preventDefault()
-        const { actions, id } = this.props
+        const { actions } = this.props
+        const id = this.props.todo.get("id")
         const value =  checked
-        //console.log('clikCheckbox ' + value)
-        //console.dir(e)
         actions.selectTodo(id, value)
     }
 
     renderCheckbox(){
-        const { actions, id, select } = this.props
+        const id = this.props.todo.get("id")
+        const select = this.props.todo.get("select")
+        const { actions } = this.props
         return (
             <Checkbox 
                 checked={ select }
@@ -159,13 +169,15 @@ export default class TodoItemList extends Component {
     }
 
     render() {
-        const { id , actions, collapse } = this.props
+        const todo = this.props.todo.toObject()
+        const { id , collapse } = todo  
+        const { actions } = this.props
         if ( ! collapse ) {
             return <div></div> 
         }
         const style = this.getStyle() 
 
-        const listText =  this.renderText(style) 
+        const listText =  this.renderText(style ,todo) 
 
         let rightIconMenu ,  leftCheckbox  
         let toggleNestedList = true
@@ -176,7 +188,7 @@ export default class TodoItemList extends Component {
         } else  {
             // listItem 组建必需的左右icon button 必需为button  所有使用a 包裹住
             rightIconMenu = this.renderRightIconMenu() 
-            sub  = this.renderSub(style)
+            sub  = this.renderSub(style, todo)
         }
         // listItem 组建必需的左右icon button 必需为button  所有使用a 包裹住
         //const rightIconMenu = this.renderRightIconMenu() 
@@ -202,28 +214,29 @@ export default class TodoItemList extends Component {
 
 //有可能是空的数组  shape的isRequired 不太需要
 TodoItemList.propTypes = {
-    tags: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        text: PropTypes.string.isRequired,
-    })), 
-    process: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        text: PropTypes.string.isRequired,
-    })), 
+    todo: React.PropTypes.instanceOf(Immutable.Map),
     actions: PropTypes.object.isRequired,
-    completed: PropTypes.bool.isRequired,
-    id: PropTypes.number.isRequired,
     index: PropTypes.number.isRequired,
-    conclusion: PropTypes.object,
-    collapse: PropTypes.bool.isRequired,
-    select: PropTypes.bool.isRequired,
-    text: PropTypes.string.isRequired,
-    fromfile: PropTypes.string.isRequired,
-    importance: PropTypes.number.isRequired,
-    urgency: PropTypes.number.isRequired,
 
-    mode: PropTypes.number.isRequired,
-    difficulty: PropTypes.number.isRequired,
+    //completed: PropTypes.bool.isRequired,
+    //id: PropTypes.number.isRequired,
+    //conclusion: PropTypes.object,
+    //collapse: PropTypes.bool.isRequired,
+    //select: PropTypes.bool.isRequired,
+    //text: PropTypes.string.isRequired,
+    //fromfile: PropTypes.string.isRequired,
+    //importance: PropTypes.number.isRequired,
+    //urgency: PropTypes.number.isRequired,
+    //mode: PropTypes.number.isRequired,
+    //difficulty: PropTypes.number.isRequired,
+    //tags: PropTypes.arrayOf(PropTypes.shape({
+        //id: PropTypes.string.isRequired,
+        //text: PropTypes.string.isRequired,
+    //})), 
+    //process: PropTypes.arrayOf(PropTypes.shape({
+        //id: PropTypes.number.isRequired,
+        //text: PropTypes.string.isRequired,
+    //})), 
 
 } 
 

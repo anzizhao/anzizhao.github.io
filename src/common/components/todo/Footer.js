@@ -1,5 +1,7 @@
 import React, { Component, PropTypes } from 'react'
 import SelectTags from './selectTags';
+import  Immutable from 'immutable'
+import OriginFileSelect from './originFileSelect';
 
 export default class Footer extends Component {
     style = {
@@ -95,23 +97,23 @@ export default class Footer extends Component {
       const { fromfiles } = this.props
       // 选择文件的需求
       const files = [
-          {id: 0, text:'[全部文件]'},  //default show all item 
-          {id: 1, text:'[浏览器的]'},  //default show all item 
-          ... fromfiles.map((item, index) => {
-              return {
-                  id: index+2,
-                  text: item.text
-              } 
-          })
+          //{id: 0, text:'[全部文件]'},  //default show all item 
+          //{id: 1, text:'[浏览器的]'},  //default show all item 
+          //... fromfiles.map((item, index) => {
+              //return {
+                  //id: index+2,
+                  //text: item.text
+              //} 
+          //})
+          ... fromfiles
       ]
       return (
           <div>
               <span style={this.style.showTip }>源文件: </span>
-              <SelectTags  
-                  onChange={ this.props.selectFromfile } 
-                  allTags = { files } 
-                  select={ this.props.tags }
-                  disableTag = { true }
+              <OriginFileSelect  
+                  files={ this.props.fromfiles} 
+                  selects={ this.props.selectFiles }
+                  actions={ this.props.actions }
               />
           </div>
       )
@@ -148,9 +150,9 @@ Footer.propTypes = {
   undoDisabled: PropTypes.bool.isRequired,
   redoDisabled: PropTypes.bool.isRequired,
 
-  fromfiles: PropTypes.arrayOf(PropTypes.shape({
-      text: PropTypes.string.isRequired,
-  }).isRequired).isRequired,
+  actions: PropTypes.object.isRequired,
+  fromfiles: React.PropTypes.instanceOf(Immutable.List),
+  selectFiles: React.PropTypes.instanceOf(Immutable.List),
 
   sort : PropTypes.oneOf([
     'SORT_ORIGIN',
@@ -166,6 +168,4 @@ Footer.propTypes = {
     'SHOW_COMPLETED',
     'SHOW_ACTIVE'
   ]).isRequired,
-  selectFromfile: PropTypes.func.isRequired,
-  
 }

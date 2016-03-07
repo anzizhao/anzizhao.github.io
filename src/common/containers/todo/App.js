@@ -12,6 +12,8 @@ import Footer from '../../components/todo/Footer'
 
 import visibleTodos from '../../components/todo/visibleTodos'
 
+import  {List} from 'immutable'
+
 
 class App extends Component {
     componentWillMount() {
@@ -74,8 +76,11 @@ class App extends Component {
 
                 onUndo={() => dispatch(ActionCreators.undo())}
                 onRedo={() => dispatch(ActionCreators.redo())}
+
                 fromfiles={this.props.fromfiles}
-                selectFromfile = {e=> this.selectFilterFile(e)  }
+                selectFiles={ this.props.selectFiles }
+                actions={actions}
+
                 undoDisabled={this.props.undoDisabled}
                 redoDisabled={this.props.redoDisabled} />
         )
@@ -91,6 +96,7 @@ class App extends Component {
               actions={actions}
               mode={mode}
               tags={tags}
+              fromfiles={this.props.fromfiles}
               
               onExportClick={() => dispatch(exportTodo()) }
               onTodoClick={id => dispatch(completeTodo(id))} />
@@ -103,10 +109,10 @@ class App extends Component {
 
 App.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  visibleTodos: PropTypes.arrayOf(PropTypes.shape({
-    text: PropTypes.string.isRequired,
-    completed: PropTypes.bool.isRequired
-  }).isRequired).isRequired,
+  visibleTodos: React.PropTypes.instanceOf(List),
+  fromfiles: React.PropTypes.instanceOf(List),
+  selectFiles: React.PropTypes.instanceOf(List),
+
   sort : PropTypes.oneOf([
                          'SORT_ORIGIN',
                          'SORT_IMPORTANCE_UP',
@@ -125,9 +131,6 @@ App.propTypes = {
       id: PropTypes.string.isRequired,
       text: PropTypes.string.isRequired,
   }).isRequired).isRequired,
-  fromfiles: PropTypes.arrayOf(PropTypes.shape({
-      text: PropTypes.string.isRequired,
-  }).isRequired).isRequired,
   actions: PropTypes.object.isRequired,
   undoDisabled: PropTypes.bool.isRequired,
   mode: PropTypes.number.isRequired,
@@ -139,14 +142,16 @@ App.propTypes = {
 function select(state) {
     let t  = state.todo
     return {
-        undoDisabled: t.todos.past.length === 0,
-        redoDisabled: t.todos.future.length === 0,
-        visibleTodos: visibleTodos (t.todos.present, t.visibilityFilter, t.sort, t.selectFile ),
+        //undoDisabled: t.todos.past.length === 0,
+        //redoDisabled: t.todos.future.length === 0,
+        undoDisabled: false ,
+        redoDisabled: false , 
+        visibleTodos: visibleTodos (t.todos, t.visibilityFilter, t.sort, t.selectFiles ),
         visibilityFilter: t.visibilityFilter,
         sort: t.sort,
         tags: t.tags,
         mode: t.mode,
-        selectFile: t.selectFile,
+        selectFiles: t.selectFiles,
         fromfiles: t.fromfiles,
         layout : state.layout
     }

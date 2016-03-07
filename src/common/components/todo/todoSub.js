@@ -6,7 +6,7 @@ import Icon from 'react-fa'
 
 
 
-
+import  Immutable from 'immutable'
 import ReactTooltip from "react-tooltip"
 import {todoSubItemStatus, todoSubItemType } from '../../actions/todo/actions'
 import Tags from './tags';
@@ -121,6 +121,17 @@ export default class TodoSubItem extends Component {
             //ele.getElementsByTagName('textarea')[1].focus()
         //}
     //}
+    //
+    //
+    shouldComponentUpdate (nProps, nState) {
+        if (Immutable.is(nProps.todo, this.props.todo ) && nProps.index === this.props.index)  {
+            //这个组件有自己的状态的 ,状态相同时候  不更新   应该将接受外面变量的跟自己有状态变化分开
+            if ( nState.itemText === this.state.itemText ) {
+                return false 
+            }
+        }
+        return true  
+    }
 
     render() {
         const style = this.getStyle() 
@@ -187,6 +198,7 @@ export default class TodoSubItem extends Component {
 }
 
 TodoSubItem.propTypes = {
+    todo: React.PropTypes.instanceOf(Immutable.Map),
     actions: PropTypes.object.isRequired,
     id: PropTypes.number.isRequired,
     todoId: PropTypes.number.isRequired,
