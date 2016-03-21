@@ -129,10 +129,17 @@ export default class TodoList extends Component {
         const { actions } = this.props
         actions.exportSelect()
     }
+
+    exportPage(e){
+        const { actions } = this.props
+        actions.exportPage()
+    }
+
     delSelect(e){
         const { actions } = this.props
         actions.delSelect()
     }
+
     renderOpGrounp() {
         const { actions } = this.props
         const style = this.getStyle() 
@@ -155,7 +162,10 @@ export default class TodoList extends Component {
         } else {
             return (
                     <div  className="todolistOpGroup">
-                        <FlatButton label="导出" 
+                        <FlatButton label="导出show" 
+                            onClick={ this.exportPage.bind(this) }  
+                            style={ style.flatButton }  />
+                        <FlatButton label="导出All" 
                             onClick={(e) => this.props.onExportClick() }  
                             style={ style.flatButton }  />
                         <FlatButton label="导入" 
@@ -164,7 +174,13 @@ export default class TodoList extends Component {
                         <ConfirmDlg
                             msg="确认清除所有todo项，建议删除前先导出备份" 
                             title='!!!! 注意'
-                            buttonLabel="清除"
+                            buttonLabel="删除show"
+                            op={(e) => this.props.actions.delPage() }
+                           />
+                        <ConfirmDlg
+                            msg="确认清除所有todo项，建议删除前先导出备份" 
+                            title='!!!! 注意'
+                            buttonLabel="删除all"
                             op={(e) => this.props.actions.clearAllTodo() }
                            />
 
@@ -172,22 +188,6 @@ export default class TodoList extends Component {
             )
         
         }
-        return (
-            this._selectMode() 
-            && 
-                <div  className="todolistOpGroup">
-                    <FlatButton label="导出" 
-                        onClick={(e) => this.props.onExportClick() }  
-                        style={ style.flatButton }  />
-                    <FlatButton label="导入" 
-                        onClick={(e) => this.handleImportClick(e) }  
-                        style={ style.flatButton }  />
-                    <ClearAllBut
-                        actions={ actions }
-                       />
-
-                </div>
-        )
     }
 
     render() {
@@ -227,10 +227,7 @@ TodoList.propTypes = {
   actions: PropTypes.object.isRequired,
   onTodoClick: PropTypes.func.isRequired,
   onExportClick: PropTypes.func.isRequired,
-  tags: PropTypes.arrayOf(PropTypes.shape({
-      id: PropTypes.string.isRequired,
-    text: PropTypes.string.isRequired,
-  }).isRequired).isRequired,
+  tags: React.PropTypes.instanceOf(Immutable.List),
 
   fromfiles: React.PropTypes.instanceOf(Immutable.List).isRequired,
   mode: PropTypes.number.isRequired,

@@ -124,7 +124,7 @@ export default class Todo extends Component {
             subItems.push(<TodoSubItem
                               todoId = { id }
                               key="conclusion" 
-                              index={1} 
+                              index={index} 
                               parentIndex={index+1}
                               {...conclusion } 
                               actions={this.props.actions} /> )
@@ -221,10 +221,7 @@ Todo.propTypes = {
     mode: PropTypes.number.isRequired,
     fromfiles: React.PropTypes.instanceOf(Immutable.List),
     onClick: PropTypes.func.isRequired,
-    allTags: PropTypes.arrayOf(PropTypes.shape({
-        id: PropTypes.string.isRequired,
-        text: PropTypes.string.isRequired,
-    })).isRequired
+    allTags: React.PropTypes.instanceOf(Immutable.List),
 }
 
 //static style 

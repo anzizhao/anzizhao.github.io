@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux'
 import undoable, { distinctState } from 'redux-undo'
-var {storeTodoState, storeTodoTags, storeTodoFromfiles, storeTodoSelectFiles,  exportFile } = require('../../util')
+var { storeTodoState, storeTodoTags, storeTodoFromfiles, storeTodoSelectFiles, storeTodoSelectTags, exportFile } = require('../../util')
 
 import { ADD_TODO, COMPLETE_TODO, SET_VISIBILITY_FILTER, VisibilityFilters, EXPORT_TODO, INIT_TODO, DEL_TODO, SAVE_TODO } from '../../actions/todo/actions'
 
@@ -57,56 +57,90 @@ function mode (state = todoActions.todoMode.default, action) {
 function addTagsItem(state, item ){
     //array find not found return undefine 
     let index = state.find((ele, index, arr) => {
-        if ( ele.text === item.text )  {
-            return true
-        }
-        return false
+        return ele.text === item.text
     })
+
     if ( ! index ) {
         let newItem = {
             id: item.text,
             text: item.text 
         }
-        state.push(newItem)
+        return state.push(newItem)
     } 
-
     return state 
 }
 
-function tags (state = [], action) {
+function tags (state = List(), action) {
     let cmds = todoActions
     let newItem, index 
     switch (action.type) {
         case todoActions.INIT_ALL:
-            return storeTodoTags()
-
         case cmds.INIT_TAGS:
-            return action.tags 
+            return List( storeTodoTags() ) 
 
-            
         case todoActions.IMPORT_TODO:
-            // 新加的  跟原来的比较  uuid是否相同  日期更新
             // add array 
             for(let item of action.tags )  {
-                addTagsItem(state,{ text: item.text })
+                state = addTagsItem(state,{ text: item.text })
             }
-            storeTodoState(state);
+            storeTodoState(state.toArray() );
             return state 
 
-            return state;
         case cmds.ADD_TAGS:
             if ( action.tags ) {
                 // add array 
                 for(let item of action.tags )  {
-                    addTagsItem(state,{ text: item.text })
+                    state = addTagsItem(state,{ text: item.text })
                 }
             } else {
                 // add item 
-                addTagsItem(state,{text: action.text} )
+                state = addTagsItem(state,{text: action.text} )
             
             }
             //store tags
-            storeTodoTags(state)           
+            storeTodoState(state.toArray() );
+
+            return state 
+
+        default:
+            return state
+    }
+}
+
+function selectTags (state = List() , action) {
+    let cmds = todoActions
+    let newItem, index 
+    switch (action.type) {
+        case todoActions.INIT_ALL:
+        case cmds.INIT_TAGS:
+            return List( storeTodoSelectTags() ) 
+
+
+        case cmds.CLEAR_ALL_TODO:
+            storeTodoSelectTags([])
+            return List()
+
+        case cmds.ADD_FILTER_TAGS:
+            index =  state.findIndex(tag => tag.text  === action.tag.text )
+            if ( index !== -1 ) {
+                return state 
+            }
+            state = state.push( action.tag )
+            storeTodoSelectTags( state.toArray() )  
+            return state 
+
+        case cmds.DEL_FILTER_TAGS:
+            index =  state.findIndex(tag => tag.text  === action.tag.text )
+            if ( index === -1 ) {
+                return state 
+            }
+            state = state.delete(index)
+            storeTodoSelectTags( state.toArray() )  
+            return state 
+
+        case cmds.CHANGE_FILTER_TAGS:
+            state = List( action.tags )
+            storeTodoSelectTags( state.toArray() )  
             return state 
 
         default:
@@ -117,6 +151,7 @@ const fromfilesInitState = List([
         { id:0 , text: eFilename.all },
         { id:1 , text: ''}, // 存放浏览器的项
 ])
+
 function fromfiles (state = fromfilesInitState, action) {
     let cmds = todoActions
     let newItem, index , db
@@ -143,6 +178,18 @@ function fromfiles (state = fromfilesInitState, action) {
             storeTodoFromfiles([])
             return fromfilesInitState 
 
+        case cmds.ADD_FROMFILE:
+            index = state.find(f => {
+                return f.text === action.fromfile.text  
+            })
+            if ( index ) {
+                // found, has in 
+                return state  
+            }
+            state = state.push({id: state.size, text: action.fromfile.text })
+            storeTodoFromfiles(state)
+            return state 
+
         default:
             return state
     }
@@ -155,7 +202,11 @@ function selectFiles(state = List() , action) {
     switch (action.type) {
         case todoActions.INIT_ALL:
         case cmds.INIT_FROMFILES:
-            return List( storeTodoSelectFiles() ) 
+            let db = storeTodoSelectFiles()
+            if ( !db || db.length === 0 ) {
+                db = [{id:0, text: eFilename.all }] 
+            }
+            return List( db ) 
 
         case cmds.SET_SELECT_FILE:
             return List( action.files )
@@ -165,14 +216,14 @@ function selectFiles(state = List() , action) {
             return List()
 
         case cmds.ADD_SELECT_FILE:
-            index =  state.findIndex(file => file.id === action.file.id )
+            index =  state.findIndex(file => file.text === action.file.text )
             if ( index !== -1 ) {
                 return state 
             }
-            return state.push( action.file )
+            return state.push({id: state.size, text: action.file.text } )
 
         case cmds.DEL_SELECT_FILE:
-            index =  state.findIndex(file => file.id === action.file.id )
+            index =  state.findIndex(file => file.text === action.file.text )
             if ( index === -1 ) {
                 return state 
             }
@@ -181,6 +232,19 @@ function selectFiles(state = List() , action) {
         default:
             return state
     }
+}
+
+function filter (state = Map() , action) {
+    let cmds = todoActions
+    // not to  store 
+    switch (action.type) {
+        case cmds.FILTER_ITEM_TEXT:
+            state = state.set('todoText', action.text )
+            return state  
+        default:
+            return state
+    }
+    // to store 
 }
 
 
@@ -197,17 +261,20 @@ function beforeReducers(state, action){
     action.currentMode = mode(state.mode, action) 
 
     let tmp , t 
-    switch (     action.type ) {
+    switch ( action.type ) {
         case todoActions.IMPORT_TODO:
             action.todos = action.fileJson.todos || []
             action.tags = action.fileJson.tags || []
             break
 
         case todoActions.DEL_SELECT:
+        case todoActions.DEL_PAGE:
             t  = state
             action.visibilityFilter = t.visibilityFilter
             action.sort = t.sort 
-            action.selectFile = t.selectFile
+            action.selectFiles = t.selectFiles
+            action.selectTags = t.selectTags
+            action.filter = t.filter
             break
         case todoActions.ADD_TODO:
             t  = state
@@ -245,6 +312,7 @@ function objExportFile(obj, filename) {
 
 function afterReducers ( state={} ,  action ) {
     let jsonObj , filename  
+    let exportSelect 
     switch (action.type) {
         case todoActions.EXPORT_TODO:
             jsonObj = {
@@ -270,17 +338,19 @@ function afterReducers ( state={} ,  action ) {
             return state
 
         case todoActions.EXPORT_SELECT:
+            exportSelect = true
+        case todoActions.EXPORT_PAGE:
             let t  = state
             jsonObj = {
                 tags: state.tags ,
             }
             //jsonObj.todos = visibleTodos (t.todos.present, t.visibilityFilter, t.sort, t.selectFiles )
-            jsonObj.todos = visibleTodos (t.todos, t.visibilityFilter, t.sort, t.selectFiles )
-                            .filter(item =>{
-                                return item.get("select")
-                            })
-                            .map(todo => todo.toObject())
-                            .toArray()
+            jsonObj.todos = visibleTodos (t)
+            if ( exportSelect  ) {
+                jsonObj.todos = jsonObj.todos.filter(item => item.get("select") )
+            }
+            jsonObj.todos = jsonObj.todos.map(todo => todo.toObject())
+                                          .toArray()
             if( state.selectFiles.size !==  0 ) {
                 filename = state.selectFiles.get(0).text  
             } else {
@@ -289,6 +359,19 @@ function afterReducers ( state={} ,  action ) {
 
             objExportFile(jsonObj, filename )
             return state
+
+        
+      case todoActions.DEL_SELECT: 
+      case todoActions.DEL_PAGE: 
+          // 更新fromfiles 和 selectfiles
+           state.fromfiles = state.fromfiles.filter( (f,index)  => 
+                index < 2 || state.todos.some ( todo => todo.get("fromfile") === f.text ) 
+          )
+           state.selectFiles =  state.selectFiles.filter(sf =>  {
+                let result = state.fromfiles.find( f => f.text === sf.text ) 
+                return result ? true: false
+           })
+           return state  
     }
     return state 
 }
@@ -303,6 +386,7 @@ export default function todoApp(state = {}, action) {
     // 级reducers 处理
     const combineState =  {
           tags: tags(state.tags, actionb ),
+          selectTags: selectTags(state.selectTags, actionb ),
           fromfiles: fromfiles(  state.fromfiles, actionb ),
           visibilityFilter: visibilityFilter(state.visibilityFilter, actionb),
           sort: sort(state.sort, actionb ),
@@ -310,6 +394,7 @@ export default function todoApp(state = {}, action) {
           //todos: undoTodo(state.todos, actionb ),
           mode: actionb.currentMode ,   // mode 需要优先处理， 其他需要根据mode来作处理的
           todos:  todos( state.todos, actionb ),
+          filter: filter(state.filter, actionb ),
     }
     //if( ! combineState.todos.equals( preTodos ) ) {
         //console.log( 'todos has changed') 

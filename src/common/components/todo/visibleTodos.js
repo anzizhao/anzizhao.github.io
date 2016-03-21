@@ -4,11 +4,28 @@ import { eFilename }  from '../../constants'
 
 import {fromJS, Map, List} from 'immutable'
 
+// sort rule:   src file ->  complete status -> metric -> tag -> date -> key word 
+export default function selectTodos(state) { 
+   const  { visibilityFilter, sort, selectFiles, selectTags, filter}  = state  
+   return _selectTodos(state.todos, visibilityFilter, sort, selectFiles, selectTags, filter)
+}
 
+export function _selectTodos(_todos, visibilityFilter, sort, selectFiles, selectTags, filter) { 
+   let todos = selectFile( _todos, selectFiles) 
+       todos = filterItemStatus(todos, visibilityFilter)
+       todos = filterMertics (todos, sort )
+       todos = filterTags(todos, selectTags)
+       todos = filterText (todos, filter.get("todoText"))
+       return todos
+}
+
+
+// src file 
 function selectFile (todos, files) {
-    //select file 数组为空, 返回全部
+    //select file 数组为空, 返回为空
     if ( ! files ||  files.size === 0) {
-        return todos 
+        return List() 
+        //return todos 
     } else {
         // 一些特殊的值 全部 没有源文件的
         let tmp 
@@ -18,24 +35,19 @@ function selectFile (todos, files) {
         if ( tmp ) {
             return todos 
         }
-
-        // 这里竟然是可以改掉的?  
-        //files.forEach(file => {
-            //if ( file.text === '存放浏览器项' ) {
-                //file.text = '' 
-            //}
-        //}) 
-        return todos.filter(item =>{
-            return files.some(file => {
-                let fromfile = item.get('fromfile')
-                // 不知道为何  会将‘’ 变为存放浏览器项  可变项的不好处
-                return file.text === fromfile || fromfile === eFilename.browser || fromfile === '' 
-            }) 
+        return todos.filter(todo =>{
+            let tf = todo.get('fromfile')
+            let result = files.find(f =>{
+                return tf === f.text 
+            })
+            return result ? true: false
         })
+
+        //return file.text === fromfile || fromfile === eFilename.browser || fromfile === '' 
     }
 }
 
-function sortTodos (todos, cmd) {
+function filterMertics (todos, cmd) {
     let cmds = todoActions.sorts   
     switch (cmd) {
         case cmds.SORT_IMPORTANCE_UP:
@@ -71,16 +83,38 @@ function sortTodos (todos, cmd) {
 }
 
 
-export default function selectTodos(_todos, filter, sort, selectedFiles ) { 
-   const todos = selectFile(_todos, selectedFiles) 
+function filterItemStatus (todos, filter) { 
    switch (filter) {
-       default:
-           case VisibilityFilters.SHOW_ALL:
-           return sortTodos( todos, sort)
        case VisibilityFilters.SHOW_COMPLETED:
-           return sortTodos(  todos.filter(todo => todo.get("completed") ) , sort)
+           return   todos.filter(todo => todo.get("completed"))  
        case VisibilityFilters.SHOW_ACTIVE:
-           return sortTodos( todos.filter(todo => !todo.get("completed") ), sort)
+           return  todos.filter(todo => !todo.get("completed") ) 
+
+       case VisibilityFilters.SHOW_ALL:
+       default:
+           return todos
    }
 }
 
+function filterTags (todos, selectTags ) {
+    if(selectTags.size === 0) {
+        return todos 
+    }
+    return todos.filter(todo =>{
+        let result = todo.get("tags").find(tag => {
+            let result = selectTags.find( selTag => selTag.text === tag.text ) 
+            return result ? true: false 
+        })
+        return result ? true: false 
+    })
+}
+
+function filterText (todos, text ) {
+    if(!text||  text === '' ) {
+        return todos 
+    }
+    let reg = new RegExp( text )
+
+    return todos.filter(todo => reg.test( todo.get('text') )
+    )
+}
