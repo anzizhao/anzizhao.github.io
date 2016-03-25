@@ -34,17 +34,24 @@ const loadTodoAsync = () => (location, cb) => {
 
             //getComponent={loadContainerAsync(require('bundle?lazy!./containers/todo/App'))}
             //getComponent={loadContainerAsync(require('bundle?lazy!./containers/todo/App'))}
+          //component={HomePage} 
+            //getComponent={loadTodoAsync()}
 export default (
   <Route name="app" path="/" component={App}>
       <Route 
           path="home" 
           component={HomePage} 
+          //getComponent={loadContainerAsync(require('bundle?lazy!./containers/HomePage'))}
       />
       <Route 
             path="todo" 
             getComponent={loadContainerAsync(require('bundle?lazy!./containers/todo/App'))}
-            //getComponent={loadTodoAsync()}
       />
+      <Route 
+          path="mindmap" 
+          getComponent={loadContainerAsync(require('bundle?lazy!./components/MindMap'))}
+      />
+
       <Route 
           path="portfolio" 
           getComponent={loadContainerAsync(require('bundle?lazy!./components/Portfolio'))}
