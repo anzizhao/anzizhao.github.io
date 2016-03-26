@@ -43,7 +43,7 @@ class App extends Component {
             if ( ! clientWidth ){
                 return  
             } 
-            let htmlRootSize = 20
+            let htmlRootSize = 25
             let referenceWidth = 1660 
             docEl.style.fontSize = htmlRootSize  * (clientWidth / referenceWidth ) + 'px';
         }

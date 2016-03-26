@@ -9,19 +9,10 @@ module.exports  = function(grunt) {
             },
             build: {
                 files: {
-                    'modules/nprogress/nprogress.min.js':'modules/nprogress/nprogress.js',
+                    'assets/js/javascript.min.js':'assets/js/javascript.js'
                 }
             }
         },
-        cssmin: {  
-            compress: {  
-                files: {  
-                    'modules/nprogress/nprogress.min.css': [  
-                        "modules/nprogress/nprogress.css",  
-                    ]  
-                }  
-            }  
-        },  
         clean: {
             options:{
                 force: true,
@@ -29,9 +20,6 @@ module.exports  = function(grunt) {
             ghPages: ["../FarmPrivateKitchen_gh-pages/*" ] 
             
         },
-
-
-
         copy_mate: {
             mainPage: {
                 options: {
@@ -118,7 +106,7 @@ module.exports  = function(grunt) {
     });
 
     // 加载包含 "uglify" 任务的插件。
-    grunt.loadNpmTasks('grunt-contrib-uglify');
+    //grunt.loadNpmTasks('grunt-contrib-uglify');
 
     //这版本copy 不强大
     //grunt.loadNpmTasks('grunt-contrib-copy');
@@ -126,7 +114,6 @@ module.exports  = function(grunt) {
     grunt.loadNpmTasks('grunt-git');
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-run');
-    grunt.loadNpmTasks('grunt-contrib-cssmin');
 
     // 默认被执行的任务列表。
     grunt.registerTask('min', ['uglify']);
