@@ -25,43 +25,20 @@ class MindMap extends Component {
     }
     componentDidMount () {
         this.refs.fileInput.addEventListener('change', this.handleChangeFile, false)
+        //TODO 加载文件获取
+        let mind = {"meta":{"name":"new mind","author":"导入创建人","version":"0.0"},"format":"node_array","data":[{"id":"root","topic":"网站","expanded":true,"isroot":true},{"id":"3ab8a07a3b9b8e09","topic":"技术","expanded":true,"parentid":"root","direction":"right"},{"id":"3ab8a4b7832a2c7c","topic":"reactjs","expanded":true,"parentid":"3ab8a07a3b9b8e09"},{"id":"3ab8a847140b4cee","topic":"redux","expanded":true,"parentid":"3ab8a07a3b9b8e09"},{"id":"3ab8aaf9113467f1","topic":"material-UI","expanded":true,"parentid":"3ab8a07a3b9b8e09"},{"id":"3ab8d7f1f7de1d3e","topic":"immutablejs","expanded":true,"parentid":"3ab8a07a3b9b8e09"},{"id":"3ab8ddf01a1fb83e","topic":"react-router + webpack 路由动态加载","expanded":true,"parentid":"3ab8a07a3b9b8e09"},{"id":"3ab88c7f94e6a60b","topic":"功能","expanded":true,"parentid":"root","direction":"left"},{"id":"3ab8e933c5e7bd01","topic":"个人介绍","expanded":true,"parentid":"3ab88c7f94e6a60b"},{"id":"3ab8edd88676aa0f","topic":"代办事项,每日工作安排","expanded":true,"parentid":"3ab88c7f94e6a60b"},{"id":"3ab8f57c4858ada4","topic":"思维导图,整理头绪","expanded":true,"parentid":"3ab88c7f94e6a60b"},{"id":"3ab8f915639bf20b","topic":"(TODO)小游戏, 益智,炫酷","expanded":true,"parentid":"3ab88c7f94e6a60b"},{"id":"3ab9087562ecfe35","topic":"(TODO)分享有趣","expanded":true,"parentid":"3ab88c7f94e6a60b"},{"id":"3ab958b5fba66987","topic":"(TODO)记录重要","expanded":true,"parentid":"3ab88c7f94e6a60b"},{"id":"3ab94d67ac6d54e4","topic":"意图","expanded":true,"parentid":"root","direction":"right"},{"id":"3ab95ddf53287562","topic":"学习技术,主要reactjs","expanded":true,"parentid":"3ab94d67ac6d54e4"},{"id":"3ab9639a6d34a8ee","topic":"个人展示","expanded":true,"parentid":"3ab94d67ac6d54e4"},{"id":"3ab969dc413b25ae","topic":"给日常事务提供服务","expanded":true,"parentid":"3ab94d67ac6d54e4"}]}
 
-        var mind = {
-            "meta":{
-                "name":"jsMind remote",
-                "author":"hizzgdev@163.com",
-                "version":"0.2"
-            },
-            "format":"node_tree",
-            "data":{"id":"root","topic":"xxxx","children":[
-                {"id":"easy","topic":"Easy","direction":"left","children":[
-                    {"id":"easy1","topic":"Easy to show"},
-                    {"id":"easy2","topic":"Easy to edit"},
-                    {"id":"easy3","topic":"Easy to store"},
-                    {"id":"easy4","topic":"Easy to embed"}
-                ]},
-                {"id":"open","topic":"Open Source","direction":"right","children":[
-                    {"id":"open1","topic":"on GitHub"},
-                    {"id":"open2","topic":"BSD License"}
-                ]},
-                {"id":"powerful","topic":"Powerful","direction":"right","children":[
-                    {"id":"powerful1","topic":"Base on Javascript"},
-                    {"id":"powerful2","topic":"Base on HTML5"},
-                    {"id":"powerful3","topic":"Depends on you"}
-                ]},
-                {"id":"other","topic":"test node","direction":"left","children":[
-                    {"id":"other1","topic":"I'm from local variable"},
-                    {"id":"other2","topic":"I can do everything"}
-                ]}
-            ]}
-        }
         var options = {
             container:'jsmind_container',
             theme:'default',
             editable:true
         }
         this._jm = new jsMind(options);
+        // 不知道为何第一次show会有问题 高度计算不对 暂时先放一放
+        // 暂时show默认的, 然后才是初始化的内容
+        this._jm.show()
         this._jm.show(mind)
+        //this._jm = jsMind.show(options, mind)
     }
 
     prompt_info(msg){
@@ -104,7 +81,7 @@ class MindMap extends Component {
             this.setState(
                 {
                     showConfirmDlg: true, 
-                    confirmMsg: "创建新图会覆盖之前的,请先保存", 
+                    confirmMsg: "新建会覆盖原图,请先导出保存", 
                     confirmDlgOp: funOp ,
                 } 
             )    
@@ -138,6 +115,12 @@ class MindMap extends Component {
 
     export = () => {
         if( ! this._jm ){
+            this.setState(
+                {
+                    showConfirmDlg: true, 
+                    confirmMsg: "没有图导出", 
+                } 
+            )    
             return  
         }
         var mind_data = this._jm.get_data('node_array');
@@ -175,6 +158,7 @@ class MindMap extends Component {
             this.setState(
                 {
                     showConfirmDlg: true, 
+                    confirmMsg: "导入操作会覆盖原图,请先导出保存", 
                     confirmDlgOp: opFunc ,
                 } 
             )    
@@ -233,23 +217,23 @@ class MindMap extends Component {
                     zDepth={5}
                 >
                     <FlatButton 
-                        label=  { "创建"}
-                        onClick={  this.create }
-                    />
-                    <FlatButton 
-                        label=  { "增加"}
+                        label=  { "增加节点"}
                         onClick={  this.add }
                     />
                     <FlatButton 
-                        label=  { "删除"}
+                        label=  { "删除节点"}
                         onClick={  this.del }
                     />
                     <FlatButton 
-                        label=  { "导入"}
+                        label=  { "新建图"}
+                        onClick={  this.create }
+                    />
+                    <FlatButton 
+                        label=  { "导入图"}
                         onClick={  this.import }
                     />
                     <FlatButton 
-                        label=  { "导出"}
+                        label=  { "导出图"}
                         onClick={  this.export }
                     />
                     <Snackbar
